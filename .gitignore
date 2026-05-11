@@ -2,14 +2,31 @@
 .env.*
 !.env.example
 
+# Service accounts and credentials
 service_account.json
-*.json
+*service_account*.json
+secrets/*.json
+secrets/*.key
+secrets/*.pem
+
+# Jupyter
+.ipynb_checkpoints/
+
 
 .venv/
 _pycache_/
 __pycache__/
-.ipynb_checkpoints/
+
+# Local vector DB / generated indexes
 chroma_db/
+chroma_bonus/
 chroma_db_langchain/
+*/chroma_db/
+*/chroma_bonus/
+*/chroma_db_langchain/
+
 data/
+
+# Logs and temporary outputs
+*.log
 .DS_Store
