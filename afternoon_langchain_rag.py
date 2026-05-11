@@ -16,9 +16,9 @@ Richiede main.py della mattina nella stessa cartella.
 Comandi principali:
 
     python afternoon_langchain_rag.py build-index --profile default
-    python afternoon_langchain_rag.py retrieve "Quando un ticket P1 va escalato?" --domain itsm
-    python afternoon_langchain_rag.py ask "Quando un ticket P1 va escalato?" --domain itsm
-    python afternoon_langchain_rag.py compare-chunks "Quando un ticket P1 va escalato?" --domain itsm
+    python afternoon_langchain_rag.py retrieve "Quando un ticket P1 va scalato?" --domain itsm
+    python afternoon_langchain_rag.py ask "Quando un ticket P1 va scalato?" --domain itsm
+    python afternoon_langchain_rag.py compare-chunks "Quando un ticket P1 va scalato?" --domain itsm
     python afternoon_langchain_rag.py batch-test
 """
 

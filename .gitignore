@@ -9,5 +9,6 @@ service_account.json
 _pycache_/
 .ipynb_checkpoints/
 chroma_db/
+chroma_db_langchain/
 data/
 .DS_Store
