@@ -34,6 +34,7 @@ from dotenv import load_dotenv
 import chromadb
 from chromadb.api.types import Documents, EmbeddingFunction, Embeddings
 
+from google import genai
 
 load_dotenv()
 
@@ -371,6 +372,22 @@ def call_vertex_gemini(prompt: str) -> str:
 
     return getattr(response, "text", str(response))
 
+def call_gemini_free(prompt: str) -> str:
+    api_key = os.getenv("GOOGLE_API_KEY")
+    if not api_key:
+        raise ValueError(
+            "GOOGLE_API_KEY non impostata. Per usare LLM_MODE=gemini_free, "
+            "devi inserirla nel file .env."
+        )
+
+    client = genai.Client(api_key=api_key, http_options={"api_version": "v1"})
+
+    response = client.models.generate_content(
+        model=os.getenv("GEMINI_MODEL", "gemini-2.5-flash"),
+        contents=prompt,
+    )
+
+    return response.text
 
 def call_llm(prompt: str) -> str:
     if LLM_MODE == "mock":
@@ -378,6 +395,9 @@ def call_llm(prompt: str) -> str:
 
     if LLM_MODE == "vertex":
         return call_vertex_gemini(prompt)
+    
+    if LLM_MODE == "gemini_free":
+        return call_gemini_free(prompt)
 
     raise ValueError("LLM_MODE deve essere mock oppure vertex")
 
