@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start': new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0], j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src= 'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f); })(window,document,'script','dataLayer','GTM-WVF23W3');</script>
+    <meta charset="utf-8">
+    <meta content="initial-scale=1, minimum-scale=1, width=device-width" name="viewport">
+    <title>Google SRE - Incident Management: Key to Restore Operations</title>
+      <meta name="description" content="Principled incident management can limit disruptions and restore normalcy. Learn about effective strategies and processes for managing incidents.">
+    <meta name="referrer" content="no-referrer" />
+    <link rel="canonical" href="https://sre.google/sre-book/managing-incidents/">
+    <link rel="apple-touch-icon-precomposed" sizes="180x180" href="https://lh3.googleusercontent.com/Yf2DCX8RKda6r4Jml9DLMByS2zQCBFs3kQpvBfN8UgIh4YVWIYSYIQOoTxJriyuM26cT5PDjyEb5aynDQ0Xyz46yHKnfg8JlUbDW">
+    <link rel="stylesheet" href="//fonts.googleapis.com/css?family=Google+Sans:400|Roboto:400,400italic,500,500italic,700,700italic|Roboto+Mono:400,500,700|Material+Icons">
+    <link rel="icon" type="image/png" sizes="32x32" href="https://lh3.googleusercontent.com/Yf2DCX8RKda6r4Jml9DLMByS2zQCBFs3kQpvBfN8UgIh4YVWIYSYIQOoTxJriyuM26cT5PDjyEb5aynDQ0Xyz46yHKnfg8JlUbDW">
+    <link rel="icon" type="image/png" sizes="16x16" href="https://lh3.googleusercontent.com/Yf2DCX8RKda6r4Jml9DLMByS2zQCBFs3kQpvBfN8UgIh4YVWIYSYIQOoTxJriyuM26cT5PDjyEb5aynDQ0Xyz46yHKnfg8JlUbDW">
+    <link rel="shortcut icon" href="https://lh3.googleusercontent.com/Yf2DCX8RKda6r4Jml9DLMByS2zQCBFs3kQpvBfN8UgIh4YVWIYSYIQOoTxJriyuM26cT5PDjyEb5aynDQ0Xyz46yHKnfg8JlUbDW">
+    <link href="/sre-book/static/css/index.min.css?cache=6c30b59" rel="stylesheet">
+    <script>
+      (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+      })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+      ga('create', 'UA-75468017-1', 'auto');
+      ga('send', 'pageview');
+    </script>
+  <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Article",
+      "mainEntityOfPage": {
+        "@type": "WebPage",
+        "@id": "/sre-book/managing-incidents/"
+      },
+      "headline": "Managing Incidents",
+      "description": "Effective incident management is key to limiting the disruption caused by an incident and restoring normal business operations as quickly as possible.",
+        "author": [
+            {
+              "@type": "Person",
+              "name": "Andrew Stribblehill"
+            }
+        ],
+      "publisher": {
+        "@type": "Organization",
+        "name": "Google SRE",
+        "logo": {
+          "@type": "ImageObject",
+          "url": "https://lh3.googleusercontent.com/C3_YVnTdc7xzTDekhsGeZ2hEYUnAlp47Au-9C50vi5r44rfpJAgiycs1g6AFKWqIpw6KVPrZWLse1VUqgOqYht-RxV1iowdB0_IABUd966aDsDWW-65m"
+        }
+      }
+    }
+  </script>
+    <script src="/sre-book/static/js/detect.min.js?cache=4cb778b"></script>
+  </head>
+
+  <body>
+    <noscript><iframe class="no-script-iframe" src="https://www.googletagmanager.com/ns.html?id=GTM-WVF23W3"></iframe></noscript>
+    <main>
+  <div ng-controller= "HeaderCtrl as headerCtrl">
+    <div id="curtain" class="menu-closed"></div>
+      <div class="header clearfix">
+        <a id="burger-menu" class="expand"></a>
+        <h2 class="chapter-title">
+                Chapter 14 - Managing Incidents
+        </h2>
+      </div>
+      <div id="overlay-element" class="expands">
+        <div class="logo">
+          <a href="https://www.google.com"><img src="https://lh3.googleusercontent.com/YoVRtLOHMSRYQZ3OhFL8RIamcjFYbmQXX4oAQx02MRqqY9zlKNvsuZpS73khXiOqTH3qrFW27VrERJJIHTjPk-tAh46q8-Fd4w6qlw" alt="Google"></a>
+        </div>
+        <ol id="drop-down" class="dropdown-content hide">
+          <li><a class="menu-buttons" href="/sre-book/table-of-contents/">Table of Contents</a></li>
+            <li>
+              <a href="/sre-book/foreword/" class="menu-buttons">
+                  Foreword
+              </a>
+            </li>
+            <li>
+              <a href="/sre-book/preface/" class="menu-buttons">
+                  Preface
+              </a>
+            </li>
+            <li>
+              <a href="/sre-book/part-I-introduction/" class="menu-buttons">
+                  Part I - Introduction
+              </a>
+            </li>
+            <li>
+              <a href="/sre-book/introduction/" class="menu-buttons">
+                  1. Introduction
+              </a>
+            </li>
+            <li>
+              <a href="/sre-book/production-environment/" class="menu-buttons">
+                  2. The Production Environment at Google, from the Viewpoint of an SRE
+              </a>
+            </li>
+            <li>
+              <a href="/sre-book/part-II-principles/" class="menu-buttons">
+                  Part II - Principles
+              </a>
+            </li>
+            <li>
+              <a href="/sre-book/embracing-risk/" class="menu-buttons">
+                  3. Embracing Risk
+              </a>
+            </li>
+            <li>
+              <a href="/sre-book/service-level-objectives/" class="menu-buttons">
+                  4. Service Level Objectives
+              </a>
+            </li>
+            <li>
+              <a href="/sre-book/eliminating-toil/" class="menu-buttons">
+                  5. Eliminating Toil
+              </a>
+            </li>
+            <li>
+              <a href="/sre-book/monitoring-distributed-systems/" class="menu-buttons">
+                  6. Monitoring Distributed Systems
+              </a>
+            </li>
+            <li>
+              <a href="/sre-book/automation-at-google/" class="menu-buttons">
+                  7. The Evolution of Automation at Google
+              </a>
+            </li>
+            <li>
+              <a href="/sre-book/release-engineering/" class="menu-buttons">
+                  8. Release Engineering
+              </a>
+            </li>
+            <li>
+              <a href="/sre-book/simplicity/" class="menu-buttons">
+                  9. Simplicity
+              </a>
+            </li>
+            <li>
+              <a href="/sre-book/part-III-practices/" class="menu-buttons">
+                  Part III - Practices
+              </a>
+            </li>
+            <li>
+              <a href="/sre-book/practical-alerting/" class="menu-buttons">
+                  10. Practical Alerting
+              </a>
+            </li>
+            <li>
+              <a href="/sre-book/being-on-call/" class="menu-buttons">
+                  11. Being On-Call
+              </a>
+            </li>
+            <li>
+              <a href="/sre-book/effective-troubleshooting/" class="menu-buttons">
+                  12. Effective Troubleshooting
+              </a>
+            </li>
+            <li>
+              <a href="/sre-book/emergency-response/" class="menu-buttons">
+                  13. Emergency Response
+              </a>
+            </li>
+            <li class="active">
+              <a href="/sre-book/managing-incidents/" class="menu-buttons">
+                  14. Managing Incidents
+              </a>
+            </li>
+            <li>
+              <a href="/sre-book/postmortem-culture/" class="menu-buttons">
+                  15. Postmortem Culture: Learning from Failure
+              </a>
+            </li>
+            <li>
+              <a href="/sre-book/tracking-outages/" class="menu-buttons">
+                  16. Tracking Outages
+              </a>
+            </li>
+            <li>
+              <a href="/sre-book/testing-reliability/" class="menu-buttons">
+                  17. Testing for Reliability
+              </a>
+            </li>
+            <li>
+              <a href="/sre-book/software-engineering-in-sre/" class="menu-buttons">
+                  18. Software Engineering in SRE
+              </a>
+            </li>
+            <li>
+              <a href="/sre-book/load-balancing-frontend/" class="menu-buttons">
+                  19. Load Balancing at the Frontend
+              </a>
+            </li>
+            <li>
+              <a href="/sre-book/load-balancing-datacenter/" class="menu-buttons">
+                  20. Load Balancing in the Datacenter
+              </a>
+            </li>
+            <li>
+              <a href="/sre-book/handling-overload/" class="menu-buttons">
+                  21. Handling Overload
+              </a>
+            </li>
+            <li>
+              <a href="/sre-book/addressing-cascading-failures/" class="menu-buttons">
+                  22. Addressing Cascading Failures
+              </a>
+            </li>
+            <li>
+              <a href="/sre-book/managing-critical-state/" class="menu-buttons">
+                  23. Managing Critical State: Distributed Consensus for Reliability
+              </a>
+            </li>
+            <li>
+              <a href="/sre-book/distributed-periodic-scheduling/" class="menu-buttons">
+                  24. Distributed Periodic Scheduling with Cron
+              </a>
+            </li>
+            <li>
+              <a href="/sre-book/data-processing-pipelines/" class="menu-buttons">
+                  25. Data Processing Pipelines
+              </a>
+            </li>
+            <li>
+              <a href="/sre-book/data-integrity/" class="menu-buttons">
+                  26. Data Integrity: What You Read Is What You Wrote
+              </a>
+            </li>
+            <li>
+              <a href="/sre-book/reliable-product-launches/" class="menu-buttons">
+                  27. Reliable Product Launches at Scale
+              </a>
+            </li>
+            <li>
+              <a href="/sre-book/part-IV-management/" class="menu-buttons">
+                  Part IV - Management
+              </a>
+            </li>
+            <li>
+              <a href="/sre-book/accelerating-sre-on-call/" class="menu-buttons">
+                  28. Accelerating SREs to On-Call and Beyond
+              </a>
+            </li>
+            <li>
+              <a href="/sre-book/dealing-with-interrupts/" class="menu-buttons">
+                  29. Dealing with Interrupts
+              </a>
+            </li>
+            <li>
+              <a href="/sre-book/operational-overload/" class="menu-buttons">
+                  30. Embedding an SRE to Recover from Operational Overload
+              </a>
+            </li>
+            <li>
+              <a href="/sre-book/communication-and-collaboration/" class="menu-buttons">
+                  31. Communication and Collaboration in SRE
+              </a>
+            </li>
+            <li>
+              <a href="/sre-book/evolving-sre-engagement-model/" class="menu-buttons">
+                  32. The Evolving SRE Engagement Model
+              </a>
+            </li>
+            <li>
+              <a href="/sre-book/part-V-conclusions/" class="menu-buttons">
+                  Part V - Conclusions
+              </a>
+            </li>
+            <li>
+              <a href="/sre-book/lessons-learned/" class="menu-buttons">
+                  33. Lessons Learned from Other Industries
+              </a>
+            </li>
+            <li>
+              <a href="/sre-book/conclusion/" class="menu-buttons">
+                  34. Conclusion
+              </a>
+            </li>
+            <li>
+              <a href="/sre-book/availability-table/" class="menu-buttons">
+                  Appendix A. Availability Table
+              </a>
+            </li>
+            <li>
+              <a href="/sre-book/service-best-practices/" class="menu-buttons">
+                  Appendix B. A Collection of Best Practices for Production Services
+              </a>
+            </li>
+            <li>
+              <a href="/sre-book/incident-document/" class="menu-buttons">
+                  Appendix C. Example Incident State Document
+              </a>
+            </li>
+            <li>
+              <a href="/sre-book/example-postmortem/" class="menu-buttons">
+                  Appendix D. Example Postmortem
+              </a>
+            </li>
+            <li>
+              <a href="/sre-book/launch-checklist/" class="menu-buttons">
+                  Appendix E. Launch Coordination Checklist
+              </a>
+            </li>
+            <li>
+              <a href="/sre-book/production-meeting/" class="menu-buttons">
+                  Appendix F. Example Production Meeting Minutes
+              </a>
+            </li>
+            <li>
+              <a href="/sre-book/bibliography/" class="menu-buttons">
+                  Bibliography
+              </a>
+            </li>
+        </ol>
+      </div>
+    </div>
+
+  <div id="maia-main">
+    <div class="content" id="content">
+      <h1 class="heading jumptargets" id="managing-incidents">Managing Incidents</h1>
+
+<p class="byline author">Written by Andrew Stribblehill<sup><a class="jumptarget" id="id-MJbuNS0Fd-marker" href="#id-MJbuNS0Fd">78</a></sup><br>Edited by Kavita Guliani</p>
+
+<p>Effective incident management is key to limiting the disruption caused by an incident and restoring normal business operations as quickly as possible. If you haven’t gamed out your <a href="https://sre.google/resources/practices-and-processes/anatomy-of-an-incident/">response to potential incidents</a> in advance, principled incident management can go out the window in real-life situations.</p>
+
+<p>This chapter walks through a portrait of an incident that spirals out of control due to ad hoc incident management practices, outlines a well-managed approach to the incident, and reviews how the same incident might have played out if handled with well-functioning incident management.</p>
+
+<h2 class="heading jumptargets" id="unmanaged-incidents">Unmanaged Incidents</h2>
+
+<p>Put yourself in the shoes of Mary, the on-call engineer for The Firm. It’s 2 p.m. on a Thursday afternoon and your pager has just exploded. Black-box monitoring tells you that your service has stopped serving <em>any</em> traffic in an entire datacenter. With a sigh, you put down your coffee and set about the job of fixing it. A few minutes into the task, another alert tells you that a second datacenter has stopped serving. Then the third out of your five datacenters fails. To exacerbate the situation, there is more traffic than the remaining datacenters can handle, so they start to overload. Before you know it, the service is overloaded and unable to serve any requests.</p>
+
+<p>You stare at the logs for what seems like an eternity. Thousands of lines of logging suggest there’s an error in one of the recently updated modules, so you decide to revert the servers to the previous release. When you see that the rollback hasn’t helped, you call Josephine, who wrote most of the code for the now-hemorrhaging service. Reminding you that it’s 3:30 a.m. in her time zone, she blearily agrees to log in and take a look. Your colleagues Sabrina and Robin start poking around from their own terminals. &quot;Just looking,&quot; they tell you.</p>
+
+<p>Now one of the suits has phoned your boss and is angrily demanding to know why he wasn’t informed about the &quot;total meltdown of this business-critical service.&quot; Independently, the vice presidents are nagging you for an ETA, repeatedly asking you, &quot;How could this possibly have happened?&quot; You would sympathize, but doing so would require cognitive effort that you are holding in reserve for your job. The VPs call on their prior engineering experience and make irrelevant but hard-to-refute comments like, &quot;Increase the page size!&quot;</p>
+
+<p>Time passes; the two remaining datacenters fail completely. Unbeknown to you, sleep-addled Josephine called Malcolm. He had a brainwave: something about CPU affinity. He felt certain that he could optimize the remaining server processes if he could just deploy this one simple change to the production environment, so he did so. Within seconds, the servers restarted, picking up the change. And then died.</p>
+
+<h1 class="heading jumptargets" id="the-anatomy-of-an-unmanaged-incident">The Anatomy of an Unmanaged Incident</h1>
+
+<p>Note that everybody in the preceding scenario was doing their job, as they saw it. How could things go so wrong? A few common hazards caused this incident to spiral out of control.</p>
+
+<h2 class="subheaders jumptargets" id="sharp-focus-on-the-technical-problem">Sharp Focus on the Technical Problem</h2>
+
+<p>We tend to hire people like Mary for their technical prowess. So it’s not surprising that she was busy making operational changes to the system, trying valiantly to solve the problem. She wasn’t in a position to think about the bigger picture of how to mitigate the problem because the technical task at hand was overwhelming.</p>
+
+<h2 class="subheaders jumptargets" id="poor-communication">Poor Communication</h2>
+
+<p>For the same reason, Mary was far too busy to communicate clearly. Nobody knew what actions their coworkers were taking. Business leaders were angry, customers were frustrated, and other engineers who could have lent a hand in debugging or fixing the issue weren’t used effectively.</p>
+
+<h2 class="subheaders jumptargets" id="freelancing">Freelancing</h2>
+
+<p>Malcolm was making changes to the system with the best of intentions. However, he didn’t coordinate with his coworkers—not even Mary, who was technically in charge of troubleshooting. His changes made a bad situation far worse.</p>
+
+<h1 class="heading jumptargets" id="elements-of-incident-management-process">Elements of Incident Management Process</h1>
+
+<p>Incident management skills and practices exist to channel the energies of enthusiastic individuals. Google’s incident management system is based on the <a href="https://sre.google/resources/practices-and-processes/incident-management-guide/">Incident Command System,</a><sup><a class="jumptarget" id="id-LvQubFGFqip-marker" href="#id-LvQubFGFqip">79</a></sup> which is known for its clarity and scalability.</p>
+
+<p>A well-designed incident management process has the following features.</p>
+
+<h2 class="subheaders jumptargets" id="recursive-separation-of-responsibilities">Recursive Separation of Responsibilities</h2>
+
+<p>It’s important to make sure that everybody involved in the incident knows their role and doesn’t stray onto someone else’s turf. Somewhat counterintuitively, a clear separation of responsibilities allows individuals more autonomy than they might otherwise have, since they need not second-guess their colleagues.</p>
+
+<p>If the load on a given member becomes excessive, that person needs to ask the planning lead for more staff. They should then delegate work to others, a task that might entail creating subincidents. Alternatively, a role leader might delegate system components to colleagues, who report high-level information back up to the leaders.</p>
+
+<p>Several distinct roles should be delegated to particular individuals:</p>
+
+<dl class="desc-list">
+  <dt class="subheaders jumptargets" id="incident-command">Incident Command</dt>
+  <dd>The incident commander holds the high-level state about the incident. They structure the incident response task force, assigning responsibilities according to need and priority. <em>De facto</em>, the commander holds all positions that they have not delegated. If appropriate, they can remove roadblocks that prevent Ops from working most effectively.</dd>
+  <dt class="subheaders jumptargets" id="operational-work">Operational Work</dt>
+  <dd>The Ops lead works with the incident commander to respond to the incident by applying operational tools to the task at hand. The operations team should be the only group modifying the system during an incident.</dd>
+  <dt class="subheaders jumptargets" id="communication">Communication</dt>
+  <dd>This person is the public face of the incident response task force. Their duties most definitely include issuing periodic updates to the incident response team and stakeholders (usually via email), and may extend to tasks such as keeping the incident document accurate and up to date.</dd>
+  <dt class="subheaders jumptargets" id="planning">Planning</dt>
+  <dd>The planning role supports Ops by dealing with longer-term issues, such as filing bugs, ordering dinner, arranging handoffs, and tracking how the system has diverged from the norm so it can be reverted once the incident is resolved.</dd>
+</dl>
+
+<h2 class="subheaders jumptargets" id="a-recognized-command-post">A Recognized Command Post</h2>
+
+<p>Interested parties need to understand where they can interact with the incident commander. In many situations, locating the incident task force members into a central designated &quot;War Room&quot; is appropriate. Others teams may prefer to work at their desks, keeping alert to incident updates via email and IRC.</p>
+
+<p>Google has found IRC to be a huge boon in incident response. IRC is very reliable and can be used as a log of communications about this event, and such a record is invaluable in keeping detailed state changes in mind. We’ve also written bots that log incident-related traffic (which is helpful for postmortem analysis), and other bots that log events such as alerts to the channel. IRC is also a convenient medium over which geographically distributed teams can coordinate.</p>
+
+<h2 class="subheaders jumptargets" id="live-incident-state-document">Live Incident State Document</h2>
+
+<p>The incident commander’s most important responsibility is to keep a living incident document. This can live in a wiki, but should ideally be editable by several people concurrently. Most of our teams use Google Docs, though Google Docs SRE use Google Sites: after all, depending on the software you are trying to fix as part of your incident management system is unlikely to end well.</p>
+
+<p>See <a href="/sre-book/incident-document/">Example Incident State Document</a> for a sample incident document. This living doc can be messy, but must be functional. Using a template makes generating this documentation easier, and keeping the most important information at the top makes it more usable. Retain this documentation for postmortem analysis and, if necessary, meta analysis.</p>
+
+<h2 class="subheaders jumptargets" id="clear-live-handoff">Clear, Live Handoff</h2>
+
+<p>It’s essential that the post of incident commander be clearly handed off at the end of the working day. If you’re handing off command to someone at another location, you can simply and safely update the new incident commander over the phone or a video call. Once the new incident commander is fully apprised, the outgoing commander should be explicit in their handoff, specifically stating, &quot;You’re now the incident commander, okay?&quot;, and should not leave the call until receiving firm acknowledgment of handoff. The handoff should be communicated to others working on the incident so that it’s clear who is leading the incident management efforts at all times.</p>
+
+<h1 class="heading jumptargets" id="a-managed-incident">A Managed Incident</h1>
+
+<p>Now let’s examine how this incident might have played out if it were handled using principles of incident management.</p>
+
+<p>It’s 2 p.m., and Mary is into her third coffee of the day. The pager’s harsh tone surprises her, and she gulps the drink down. Problem: a datacenter has stopped serving traffic. She starts to investigate. Shortly another alert fires, and the second datacenter out of five is out of order. Because this is a rapidly growing issue, she knows that she’ll benefit from the structure of her incident management framework.</p>
+
+<p>Mary snags Sabrina. &quot;Can you take command?&quot; Nodding her agreement, Sabrina quickly gets a rundown of what’s occurred thus far from Mary. She captures these details in an email that she sends to a prearranged mailing list. Sabrina recognizes that she can’t yet scope the impact of the incident, so she asks for Mary’s assessment. Mary responds, &quot;Users have yet to be impacted; let’s just hope we don’t lose a third datacenter.&quot; Sabrina records Mary’s response in a live incident document.</p>
+
+<p>When the third alert fires, Sabrina sees the alert among the debugging chatter on IRC and quickly follows up to the email thread with an update. The thread keeps VPs abreast of the high-level status without bogging them down in minutiae. Sabrina asks an external communications representative to start drafting user messaging. She then follows up with Mary to see if they should contact the developer on-call (currently Josephine). Receiving Mary’s approval, Sabrina loops in Josephine.</p>
+
+<p>By the time Josephine logs in, Robin has already volunteered to help out. Sabrina reminds both Robin and Josephine that they are to prioritize any tasks delegated to them by Mary, and that they must keep Mary informed of any additional actions they take. Robin and Josephine quickly familiarize themselves with the current situation by reading the incident document.</p>
+
+<p>By now, Mary has tried the old binary release and found it wanting: she mutters this to Robin, who updates IRC to say that this attempted fix didn’t work. Sabrina pastes this update into the live incident management document.</p>
+
+<p>At 5 p.m., Sabrina starts finding replacement staff to take on the incident, as she and her colleagues are about to go home. She updates the incident document. A brief phone conference takes place at 5:45 so everyone is aware of the current situation. At 6 p.m., they hand off their responsibilities to their colleagues in the sister office.</p>
+
+<p>Mary returns to work the following morning to find that her transatlantic colleagues have assumed responsibility for the bug, mitigated the problem, closed the incident, and started work on the postmortem. Problem solved, she brews some fresh coffee and settles down to plan structural improvements so problems of this category don’t afflict the team again.</p>
+
+<h1 class="heading jumptargets" id="when-to-declare-an-incident">When to Declare an Incident</h1>
+
+<p>It is better to declare an incident early and then find a simple fix and close out the incident than to have to spin up the incident management framework hours into a burgeoning problem. Set clear conditions for declaring an incident. My team follows these broad guidelines—if any of the following is true, the event is an incident:</p>
+
+<ul>
+  <li>Do you need to involve a second team in fixing the problem?</li>
+  <li>Is the outage visible to customers?</li>
+  <li>Is the issue unsolved even after an hour’s concentrated analysis?</li>
+</ul>
+
+<p>Incident management proficiency atrophies quickly when it’s not in constant use. So how can engineers keep their incident management skills up to date—handle more incidents? Fortunately, the incident management framework can apply to other operational changes that need to span time zones and/or teams. If you use the framework frequently as a regular part of your change management procedures, you can easily follow this framework when an actual incident occurs. If your organization performs disaster-recovery testing (you should, it’s <em>fun</em>: see <a href="/sre-book/bibliography#Kri12">[Kri12]</a>), incident management should be part of that testing process. We often role-play the response to an on-call issue that has already been solved, perhaps by colleagues in another location, to further familiarize ourselves with incident management.</p>
+
+<h1 class="heading jumptargets" id="in-summary">In Summary</h1>
+
+<p>We’ve found that by formulating an incident management strategy in advance, structuring this plan to scale smoothly, and regularly putting the plan to use, we were able to reduce our mean time to recovery and provide staff a less stressful way to work on emergent problems. Any organization concerned with reliability would benefit from pursuing a similar strategy.</p>
+
+<h5 class="subheaders jumptargets" id="best-practices-for-incident-management">Best Practices for Incident Management</h5>
+
+<p><strong>Prioritize.</strong>Stop the bleeding, restore service, and preserve the evidence for root-causing.</p>
+
+<p><strong>Prepare.</strong>Develop and document your incident management procedures in advance, in consultation with incident participants.</p>
+
+<p><strong>Trust.</strong>Give full autonomy within the assigned role to all incident participants.</p>
+
+<p><strong>Introspect.</strong>Pay attention to your emotional state while responding to an incident. If you start to feel panicky or overwhelmed, solicit more support.</p>
+
+<p><strong>Consider alternatives.</strong>Periodically consider your options and re-evaluate whether it still makes sense to continue what you’re doing or whether you should be taking another tack in incident response.</p>
+
+<p><strong>Practice.</strong>Use the process routinely so it becomes second nature.</p>
+
+<p><strong>Change it around.</strong>Were you incident commander last time? Take on a different role this time. Encourage every team member to acquire familiarity with each role.</p>
+
+<div class="footnotes"><p id="id-MJbuNS0Fd"><sup><a class="jumptargets" href="#id-MJbuNS0Fd-marker">78</a></sup>An earlier version of this chapter appeared as an article in <em>;login:</em> (April 2015, vol. 40, no. 2).</p><p id="id-LvQubFGFqip"><sup><a class="jumptargets" href="#id-LvQubFGFqip-marker">79</a></sup>See <a href="https://www.fema.gov/national-incident-management-system" target="_blank" rel="noopener noreferrer"><em>https://www.fema.gov/national-incident-management-system</em></a> for further details.</p></div>
+    </div>
+  </div>
+
+  <div class="footer">
+    <div class="maia-aux">
+      <div class="previous">
+          <a href="/sre-book/emergency-response/">
+            <p class="footer-caption">Previous</p>
+            <p class="chapter-link">
+                Chapter 13 - Emergency Response
+            </p>
+          </a>
+      </div>
+      <div class="next">
+          <a href="/sre-book/postmortem-culture/">
+            <p class="footer-caption">Next</p>
+            <p class="chapter-link">
+                Chapter 15 - Postmortem Culture: Learning from Failure
+            </p>
+          </a>
+      </div>
+        <p class="footer-link">Copyright © 2017 Google, Inc. Published by O'Reilly Media, Inc. Licensed under <a href="https://creativecommons.org/licenses/by-nc-nd/4.0/" rel="noopener noreferrer" target="_blank">CC BY-NC-ND 4.0</a></p>
+    </div>
+  </div>
+    </main>
+    <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.6.6/angular.min.js"></script>
+    <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.6.6/angular-animate.min.js"></script>
+    <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.6.6/angular-touch.min.js"></script>
+    <script src="/sre-book/static/js/index.min.js?cache=5b7f90b"></script>
+
+  </body>
+</html>

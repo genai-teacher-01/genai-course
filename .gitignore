@@ -1,0 +1,13 @@
+.env
+.env.*
+!.env.example
+
+service_account.json
+*.json
+
+.venv/
+_pycache_/
+.ipynb_checkpoints/
+chroma_db/
+data/
+.DS_Store

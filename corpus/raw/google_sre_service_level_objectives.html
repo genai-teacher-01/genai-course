@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start': new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0], j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src= 'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f); })(window,document,'script','dataLayer','GTM-WVF23W3');</script>
+    <meta charset="utf-8">
+    <meta content="initial-scale=1, minimum-scale=1, width=device-width" name="viewport">
+    <title>Google SRE - Defining slo: service level objective meaning</title>
+      <meta name="description" content="SRE SLO book to understand service level objective meaning and the various service level terminilogy including sla slo sli to improve service reliability.">
+    <meta name="referrer" content="no-referrer" />
+    <link rel="canonical" href="https://sre.google/sre-book/service-level-objectives/">
+    <link rel="apple-touch-icon-precomposed" sizes="180x180" href="https://lh3.googleusercontent.com/Yf2DCX8RKda6r4Jml9DLMByS2zQCBFs3kQpvBfN8UgIh4YVWIYSYIQOoTxJriyuM26cT5PDjyEb5aynDQ0Xyz46yHKnfg8JlUbDW">
+    <link rel="stylesheet" href="//fonts.googleapis.com/css?family=Google+Sans:400|Roboto:400,400italic,500,500italic,700,700italic|Roboto+Mono:400,500,700|Material+Icons">
+    <link rel="icon" type="image/png" sizes="32x32" href="https://lh3.googleusercontent.com/Yf2DCX8RKda6r4Jml9DLMByS2zQCBFs3kQpvBfN8UgIh4YVWIYSYIQOoTxJriyuM26cT5PDjyEb5aynDQ0Xyz46yHKnfg8JlUbDW">
+    <link rel="icon" type="image/png" sizes="16x16" href="https://lh3.googleusercontent.com/Yf2DCX8RKda6r4Jml9DLMByS2zQCBFs3kQpvBfN8UgIh4YVWIYSYIQOoTxJriyuM26cT5PDjyEb5aynDQ0Xyz46yHKnfg8JlUbDW">
+    <link rel="shortcut icon" href="https://lh3.googleusercontent.com/Yf2DCX8RKda6r4Jml9DLMByS2zQCBFs3kQpvBfN8UgIh4YVWIYSYIQOoTxJriyuM26cT5PDjyEb5aynDQ0Xyz46yHKnfg8JlUbDW">
+    <link href="/sre-book/static/css/index.min.css?cache=6c30b59" rel="stylesheet">
+    <script>
+      (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+      })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+      ga('create', 'UA-75468017-1', 'auto');
+      ga('send', 'pageview');
+    </script>
+  <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Article",
+      "mainEntityOfPage": {
+        "@type": "WebPage",
+        "@id": "/sre-book/service-level-objectives/"
+      },
+      "headline": "Service Level Objectives",
+      "description": "It's impossible to manage a service correctly, let alone well, without understanding which behaviors really matter for that service and how to measure and evaluate those behaviors.",
+        "image": "https://lh3.googleusercontent.com/G-Ljl-lx35hRTILL9pwj-ty2S5KE8piLPmx4wZSoaLpnfvw4WgdseYm-X5ZPCMNZS01eJmyZFwjHL4yK3ptj6WglYlX20Oi3dxA",
+        "author": [
+            {
+              "@type": "Person",
+              "name": "Chris Jones"
+            },
+            {
+              "@type": "Person",
+              "name": "John Wilkes"
+            },
+            {
+              "@type": "Person",
+              "name": "Niall Murphy"
+            },
+            {
+              "@type": "Person",
+              "name": "Cody Smith"
+            }
+        ],
+      "publisher": {
+        "@type": "Organization",
+        "name": "Google SRE",
+        "logo": {
+          "@type": "ImageObject",
+          "url": "https://lh3.googleusercontent.com/C3_YVnTdc7xzTDekhsGeZ2hEYUnAlp47Au-9C50vi5r44rfpJAgiycs1g6AFKWqIpw6KVPrZWLse1VUqgOqYht-RxV1iowdB0_IABUd966aDsDWW-65m"
+        }
+      }
+    }
+  </script>
+    <script src="/sre-book/static/js/detect.min.js?cache=4cb778b"></script>
+  </head>
+
+  <body>
+    <noscript><iframe class="no-script-iframe" src="https://www.googletagmanager.com/ns.html?id=GTM-WVF23W3"></iframe></noscript>
+    <main>
+  <div ng-controller= "HeaderCtrl as headerCtrl">
+    <div id="curtain" class="menu-closed"></div>
+      <div class="header clearfix">
+        <a id="burger-menu" class="expand"></a>
+        <h2 class="chapter-title">
+                Chapter 4 - Service Level Objectives
+        </h2>
+      </div>
+      <div id="overlay-element" class="expands">
+        <div class="logo">
+          <a href="https://www.google.com"><img src="https://lh3.googleusercontent.com/YoVRtLOHMSRYQZ3OhFL8RIamcjFYbmQXX4oAQx02MRqqY9zlKNvsuZpS73khXiOqTH3qrFW27VrERJJIHTjPk-tAh46q8-Fd4w6qlw" alt="Google"></a>
+        </div>
+        <ol id="drop-down" class="dropdown-content hide">
+          <li><a class="menu-buttons" href="/sre-book/table-of-contents/">Table of Contents</a></li>
+            <li>
+              <a href="/sre-book/foreword/" class="menu-buttons">
+                  Foreword
+              </a>
+            </li>
+            <li>
+              <a href="/sre-book/preface/" class="menu-buttons">
+                  Preface
+              </a>
+            </li>
+            <li>
+              <a href="/sre-book/part-I-introduction/" class="menu-buttons">
+                  Part I - Introduction
+              </a>
+            </li>
+            <li>
+              <a href="/sre-book/introduction/" class="menu-buttons">
+                  1. Introduction
+              </a>
+            </li>
+            <li>
+              <a href="/sre-book/production-environment/" class="menu-buttons">
+                  2. The Production Environment at Google, from the Viewpoint of an SRE
+              </a>
+            </li>
+            <li>
+              <a href="/sre-book/part-II-principles/" class="menu-buttons">
+                  Part II - Principles
+              </a>
+            </li>
+            <li>
+              <a href="/sre-book/embracing-risk/" class="menu-buttons">
+                  3. Embracing Risk
+              </a>
+            </li>
+            <li class="active">
+              <a href="/sre-book/service-level-objectives/" class="menu-buttons">
+                  4. Service Level Objectives
+              </a>
+            </li>
+            <li>
+              <a href="/sre-book/eliminating-toil/" class="menu-buttons">
+                  5. Eliminating Toil
+              </a>
+            </li>
+            <li>
+              <a href="/sre-book/monitoring-distributed-systems/" class="menu-buttons">
+                  6. Monitoring Distributed Systems
+              </a>
+            </li>
+            <li>
+              <a href="/sre-book/automation-at-google/" class="menu-buttons">
+                  7. The Evolution of Automation at Google
+              </a>
+            </li>
+            <li>
+              <a href="/sre-book/release-engineering/" class="menu-buttons">
+                  8. Release Engineering
+              </a>
+            </li>
+            <li>
+              <a href="/sre-book/simplicity/" class="menu-buttons">
+                  9. Simplicity
+              </a>
+            </li>
+            <li>
+              <a href="/sre-book/part-III-practices/" class="menu-buttons">
+                  Part III - Practices
+              </a>
+            </li>
+            <li>
+              <a href="/sre-book/practical-alerting/" class="menu-buttons">
+                  10. Practical Alerting
+              </a>
+            </li>
+            <li>
+              <a href="/sre-book/being-on-call/" class="menu-buttons">
+                  11. Being On-Call
+              </a>
+            </li>
+            <li>
+              <a href="/sre-book/effective-troubleshooting/" class="menu-buttons">
+                  12. Effective Troubleshooting
+              </a>
+            </li>
+            <li>
+              <a href="/sre-book/emergency-response/" class="menu-buttons">
+                  13. Emergency Response
+              </a>
+            </li>
+            <li>
+              <a href="/sre-book/managing-incidents/" class="menu-buttons">
+                  14. Managing Incidents
+              </a>
+            </li>
+            <li>
+              <a href="/sre-book/postmortem-culture/" class="menu-buttons">
+                  15. Postmortem Culture: Learning from Failure
+              </a>
+            </li>
+            <li>
+              <a href="/sre-book/tracking-outages/" class="menu-buttons">
+                  16. Tracking Outages
+              </a>
+            </li>
+            <li>
+              <a href="/sre-book/testing-reliability/" class="menu-buttons">
+                  17. Testing for Reliability
+              </a>
+            </li>
+            <li>
+              <a href="/sre-book/software-engineering-in-sre/" class="menu-buttons">
+                  18. Software Engineering in SRE
+              </a>
+            </li>
+            <li>
+              <a href="/sre-book/load-balancing-frontend/" class="menu-buttons">
+                  19. Load Balancing at the Frontend
+              </a>
+            </li>
+            <li>
+              <a href="/sre-book/load-balancing-datacenter/" class="menu-buttons">
+                  20. Load Balancing in the Datacenter
+              </a>
+            </li>
+            <li>
+              <a href="/sre-book/handling-overload/" class="menu-buttons">
+                  21. Handling Overload
+              </a>
+            </li>
+            <li>
+              <a href="/sre-book/addressing-cascading-failures/" class="menu-buttons">
+                  22. Addressing Cascading Failures
+              </a>
+            </li>
+            <li>
+              <a href="/sre-book/managing-critical-state/" class="menu-buttons">
+                  23. Managing Critical State: Distributed Consensus for Reliability
+              </a>
+            </li>
+            <li>
+              <a href="/sre-book/distributed-periodic-scheduling/" class="menu-buttons">
+                  24. Distributed Periodic Scheduling with Cron
+              </a>
+            </li>
+            <li>
+              <a href="/sre-book/data-processing-pipelines/" class="menu-buttons">
+                  25. Data Processing Pipelines
+              </a>
+            </li>
+            <li>
+              <a href="/sre-book/data-integrity/" class="menu-buttons">
+                  26. Data Integrity: What You Read Is What You Wrote
+              </a>
+            </li>
+            <li>
+              <a href="/sre-book/reliable-product-launches/" class="menu-buttons">
+                  27. Reliable Product Launches at Scale
+              </a>
+            </li>
+            <li>
+              <a href="/sre-book/part-IV-management/" class="menu-buttons">
+                  Part IV - Management
+              </a>
+            </li>
+            <li>
+              <a href="/sre-book/accelerating-sre-on-call/" class="menu-buttons">
+                  28. Accelerating SREs to On-Call and Beyond
+              </a>
+            </li>
+            <li>
+              <a href="/sre-book/dealing-with-interrupts/" class="menu-buttons">
+                  29. Dealing with Interrupts
+              </a>
+            </li>
+            <li>
+              <a href="/sre-book/operational-overload/" class="menu-buttons">
+                  30. Embedding an SRE to Recover from Operational Overload
+              </a>
+            </li>
+            <li>
+              <a href="/sre-book/communication-and-collaboration/" class="menu-buttons">
+                  31. Communication and Collaboration in SRE
+              </a>
+            </li>
+            <li>
+              <a href="/sre-book/evolving-sre-engagement-model/" class="menu-buttons">
+                  32. The Evolving SRE Engagement Model
+              </a>
+            </li>
+            <li>
+              <a href="/sre-book/part-V-conclusions/" class="menu-buttons">
+                  Part V - Conclusions
+              </a>
+            </li>
+            <li>
+              <a href="/sre-book/lessons-learned/" class="menu-buttons">
+                  33. Lessons Learned from Other Industries
+              </a>
+            </li>
+            <li>
+              <a href="/sre-book/conclusion/" class="menu-buttons">
+                  34. Conclusion
+              </a>
+            </li>
+            <li>
+              <a href="/sre-book/availability-table/" class="menu-buttons">
+                  Appendix A. Availability Table
+              </a>
+            </li>
+            <li>
+              <a href="/sre-book/service-best-practices/" class="menu-buttons">
+                  Appendix B. A Collection of Best Practices for Production Services
+              </a>
+            </li>
+            <li>
+              <a href="/sre-book/incident-document/" class="menu-buttons">
+                  Appendix C. Example Incident State Document
+              </a>
+            </li>
+            <li>
+              <a href="/sre-book/example-postmortem/" class="menu-buttons">
+                  Appendix D. Example Postmortem
+              </a>
+            </li>
+            <li>
+              <a href="/sre-book/launch-checklist/" class="menu-buttons">
+                  Appendix E. Launch Coordination Checklist
+              </a>
+            </li>
+            <li>
+              <a href="/sre-book/production-meeting/" class="menu-buttons">
+                  Appendix F. Example Production Meeting Minutes
+              </a>
+            </li>
+            <li>
+              <a href="/sre-book/bibliography/" class="menu-buttons">
+                  Bibliography
+              </a>
+            </li>
+        </ol>
+      </div>
+    </div>
+
+  <div id="maia-main">
+    <div class="content" id="content">
+      <section data-type="chapter" id="chapter_sli-slo-sla">
+  <h1 class="heading jumptargets">Service Level Objectives</h1>
+  <p class="byline author">Written by Chris Jones, John Wilkes, and Niall Murphy <span class="keep-together">with Cody Smith</span><br>Edited by Betsy Beyer</p>
+<p>It’s impossible to manage a service correctly, let alone well, without understanding which behaviors really matter for that service and how to measure and evaluate those behaviors. To this end, we would like to define and deliver a given <em>level of service</em> to our users, whether they use an internal API or a public product.</p>
+<p>We use intuition, experience, and an understanding of what users want to define <em>service level indicators</em> (SLIs), <em>objectives</em> (SLOs), and <em>agreements</em> (SLAs). These measurements describe basic properties of metrics that matter, what values we want those metrics to have, and how we’ll react if we can’t provide the expected service. Ultimately, choosing appropriate metrics helps to drive the right action if something goes wrong, and also gives an SRE team confidence that a service is healthy.</p>
+<p>This chapter describes the framework we use to wrestle with the problems of metric modeling, metric selection, and metric analysis. Much of this explanation would be quite abstract without an example, so we’ll use the Shakespeare service outlined in <a data-type="xref" href="/sre-book/production-environment#xref_production-environment_shakespeare">Shakespeare: A Sample Service</a> to illustrate our main points.</p>
+<section data-type="sect1" id="service-level-terminology-2ksJcd">
+  <h2 class="heading jumptargets">Service Level Terminology</h2>
+<p>Many readers are likely familiar with the concept of an SLA, but the terms <em>SLI</em> and <em>SLO</em> are also worth careful definition, because in common use, the term <em>SLA</em> is overloaded and has taken on a number of meanings depending on context. We prefer to separate those meanings for clarity.</p>
+<section data-type="sect2" id="indicators-o8seIAcZ">
+      <h2 class="subheaders jumptargets">Indicators</h2>
+<p>An SLI is a service level <em>indicator</em>—a carefully defined quantitative measure of some aspect of the level of service that is provided.</p>
+<p>Most services consider <em>request latency</em>—how long it takes to return a response to a request—as a key SLI. Other common SLIs include the <em>error rate</em>, often expressed as a fraction of all requests received, and <em>system throughput</em>, typically measured in requests per second. The measurements are often aggregated: i.e., raw data is collected over a measurement window and then turned into a rate, average, or percentile.</p>
+<p>Ideally, the SLI directly measures a service level of interest, but sometimes only a proxy is available because the desired measure may be hard to obtain or interpret. For example, client-side latency is often the more user-relevant metric, but it might only be possible to measure latency at the server.</p>
+<p>Another kind of SLI important to SREs is <em>availability</em>, or the fraction of the time that a service is usable. It is often defined in terms of the fraction of well-formed requests that succeed, sometimes called <em>yield</em>. (<em>Durability</em>—the likelihood that data will be retained over a long period of time—is equally important for <a href="https://sre.google/sre-book/data-integrity/">data storage systems.</a>) Although 100% availability is impossible, near-100% availability is often readily achievable, and the industry commonly expresses high-availability values in terms of the number of "nines" in the availability percentage. For example, availabilities of 99% and 99.999% can be referred to as "2 nines" and "5 nines" availability, respectively, and the current published target for Google Compute Engine availability is “three and a half nines”—99.95% availability.</p>
+</section>
+<section data-type="sect2" id="objectives-g0s1tdcz">
+      <h2 class="subheaders jumptargets">Objectives</h2>
+      <p>An SLO is a <em>service level objective</em>: a target value or range of values for a service level that is measured by an SLI. A natural structure for SLOs is thus <em>SLI ≤ target</em>, or <em>lower bound ≤ SLI ≤ upper bound</em>. For example, we might decide that we will return Shakespeare search results "quickly," adopting an SLO that our average search request latency should be less than 100 milliseconds.</p>
+      <p>Choosing an appropriate SLO is complex. To begin with, you don’t always get to choose its value! For incoming HTTP requests from the outside world to your service, the queries per second (QPS) metric is essentially determined by the desires of your users, and you can’t really set an SLO for that.</p>
+      <p>On the other hand, you <em>can</em> say that you want the average latency per request to be under 100 milliseconds, and setting such a goal could in turn motivate you to write your frontend with low-latency behaviors of various kinds or to buy certain kinds of low-latency equipment. (100 milliseconds is obviously an arbitrary value, but in general lower latency numbers are good. There are excellent reasons to believe that fast is better than slow, and that user-experienced latency above certain values actually drives people away— see "Speed Matters" <a data-type="xref" href="/sre-book/bibliography#Bru09">[Bru09]</a> for more details.)</p>
+      <p>Again, this is more subtle than it might at first appear, in that those two SLIs—QPS and latency—might be connected behind the scenes: higher QPS often leads to larger latencies, and it’s common for services to have a performance cliff beyond some load threshold.</p>
+      <p>Choosing and <a href="https://sre.google/resources/practices-and-processes/art-of-slos/">publishing SLOs</a> to users sets expectations about how a service will perform. This strategy can reduce unfounded complaints to service owners about, for example, the service being slow. Without an explicit SLO, users often develop their own beliefs about desired performance, which may be unrelated to the beliefs held by the people designing and operating the service. This dynamic can lead to both over-reliance on the service, when users incorrectly believe that a service will be more available than it actually is (as happened with Chubby: see <a data-type="xref" href="#xref_risk-management_global-chubby-planned-outage" data-xrefstyle="select:nopage">The Global Chubby Planned Outage</a>), and under-reliance, when prospective users believe a system is flakier and less reliable than it actually is.</p>
+      <aside id="xref_risk-management_global-chubby-planned-outage" data-type="sidebar" class="highlight">
+        <h5 class="heading jumptargets">The Global Chubby Planned Outage</h5>
+        <p class="byline author">Written by Marc Alvidrez</p>
+        <p>Chubby <a data-type="xref" href="/sre-book/bibliography#Bur06">[Bur06]</a> is Google’s lock service for loosely coupled distributed systems. In the global case, we distribute Chubby instances such that each replica is in a different geographical region. Over time, we found that the failures of the global instance of Chubby consistently generated service outages, many of which were visible to end users. As it turns out, true global Chubby outages are so infrequent that service owners began to add dependencies to Chubby assuming that it would never go down. Its high reliability provided a false sense of security because the services could not function appropriately when Chubby was unavailable, however rarely that occurred.</p>
+        <p>The solution to this Chubby scenario is interesting: SRE makes sure that global Chubby meets, but does not significantly exceed, its service level objective. In any given quarter, if a true failure has not dropped availability below the target, a controlled outage will be synthesized by intentionally taking down the system. In this way, we are able to flush out unreasonable dependencies on Chubby shortly after they are added. Doing so forces service owners to reckon with the reality of distributed systems sooner rather than later.</p>
+      </aside>
+    </section>
+<section data-type="sect2" id="agreements-q8sZhAcV">
+      <h2 class="subheaders jumptargets">Agreements</h2>
+      <p>Finally, SLAs are service level <em>agreements</em>: an explicit or implicit contract with your users that includes consequences of meeting (or missing) the SLOs they contain. The consequences are most easily recognized when they are financial—a rebate or a penalty—but they can take other forms. An easy way to tell the difference between an SLO and an SLA is to ask "what happens if the SLOs aren’t met?": if there is no explicit consequence, then you are almost certainly looking at an SLO.<sup><a class="jumptarget" data-type="noteref" id="id-7pEuEIgFQhdcP-marker" href="#id-7pEuEIgFQhdcP">16</a></sup></p>
+      <p>SRE doesn’t typically get involved in constructing SLAs, because SLAs are closely tied to business and product decisions. SRE does, however, get involved in helping to avoid triggering the consequences of missed SLOs. They can also help to define the SLIs: there obviously needs to be an objective way to measure the SLOs in the agreement, or disagreements will arise.</p>
+      <p>Google Search is an example of an important service that doesn’t have an SLA for the public: we want everyone to use Search as fluidly and efficiently as possible, but we haven’t signed a contract with the whole world. Even so, there are still consequences if Search isn’t available—unavailability results in a hit to our reputation, as well as a drop in advertising revenue. Many other Google services, such as Google for Work, do have explicit SLAs with their users. Whether or not a particular service has an SLA, it’s valuable to define SLIs and SLOs and use them to manage the service.</p>
+      <p>So much for the theory—now for the experience.</p>
+    </section>
+  </section>
+<section data-type="sect1" id="indicators-in-practice-pWs7iE">
+    <h1 class="heading jumptargets">Indicators in Practice</h1>
+    <p>Given that we’ve made the case for <em>why</em> choosing appropriate <a href="https://sre.google/sre-book/practical-alerting/">metrics to measure your service</a> is important, how do you go about identifying what metrics are meaningful to your service or system?</p>
+<section data-type="sect2" id="what-do-you-and-your-users-care-about-g0s2Ipiz">
+      <h2 class="subheaders jumptargets">What Do You and Your Users Care About?</h2>
+      <p>You shouldn’t use every metric you can track in your monitoring system as an SLI; an understanding of what your users want from the system will inform the judicious selection of a few indicators. Choosing too many indicators makes it hard to pay the right level of attention to the indicators that matter, while choosing too few may leave significant behaviors of your system unexamined. We typically find that a handful of representative indicators are enough to evaluate and reason about a system’s health.</p>
+      <p class="pagebreak-before">Services tend to fall into a few broad categories in terms of the SLIs they find relevant:</p>
+      <ul>
+        <li>
+          <em>User-facing serving systems</em>, such as the Shakespeare search frontends, generally care about <em>availability</em>, <em>latency</em>, and <em>throughput</em>. In other words: Could we respond to the request? How long did it take to respond? How many requests could be handled?
+        </li>
+        <li>
+          <em>Storage systems</em> often emphasize <em>latency</em>, <em>availability</em>, and <em>durability</em>. In other words: How long does it take to read or write data? Can we access the data on demand? Is the data still there when we need it? See <a data-type="xref" href="/sre-book/data-integrity/">Data Integrity: What You Read Is What You Wrote</a> for an extended discussion of these issues.
+        </li>
+        <li>
+          <em>Big data systems</em>, such as data processing pipelines, tend to care about <em>throughput</em> and <em>end-to-end latency</em>. In other words: How much data is being processed? How long does it take the data to progress from ingestion to completion? (Some pipelines may also have targets for latency on individual processing stages.)
+        </li>
+        <li>
+          All systems should care about <em>correctness</em>: was the right answer returned, the right data retrieved, the right analysis done? Correctness is important to track as an indicator of system health, even though it’s often a property of the data in the system rather than the infrastructure <em>per se</em>, and so usually not an SRE responsibility to meet.
+        </li>
+      </ul>
+    </section>
+<section data-type="sect2" id="collecting-indicators-q8svtQiV">
+      <h2 class="subheaders jumptargets">Collecting Indicators</h2>
+      <p>Many indicator metrics are most naturally gathered on the server side, using a monitoring system such as Borgmon (see <a data-type="xref" href="/sre-book/practical-alerting/">Practical Alerting from Time-Series Data</a>) or Prometheus, or with periodic log analysis—for instance, HTTP 500 responses as a fraction of all requests. However, some systems should be instrumented with <em>client</em>-side collection, because not measuring behavior at the client can miss a range of problems that affect users but don’t affect server-side metrics. For example, concentrating on the response latency of the Shakespeare search backend might miss poor user latency due to problems with the page’s JavaScript: in this case, measuring how long it takes for a page to become usable in the browser is a better proxy for what the user actually experiences.</p>
+    </section>
+<section data-type="sect2" id="aggregation-1Ls9hQin">
+      <h2 class="subheaders jumptargets">Aggregation</h2>
+      <p>For simplicity and usability, we often aggregate raw measurements. This needs to be done carefully.</p>
+      <p>Some metrics are seemingly straightforward, like the number of requests <em>per second</em> served, but even this apparently straightforward measurement implicitly aggregates data over the measurement window. Is the measurement obtained once a second, or by averaging requests over a minute? The latter may hide much higher instantaneous request rates in bursts that last for only a few seconds. Consider a system that serves 200 requests/s in even-numbered seconds, and 0 in the others. It has the same average load as one that serves a constant 100 requests/s, but has an <em>instantaneous</em> load that is twice as large as the <em>average</em> one. Similarly, averaging request latencies may seem attractive, but obscures an important detail: it’s entirely possible for most of the requests to be fast, but for a long tail of requests to be much, much slower.</p>
+      <p>Most metrics are better thought of as <em>distributions</em> rather than averages. For example, for a latency SLI, some requests will be serviced quickly, while others will invariably take longer—sometimes much longer. A simple average can obscure these tail latencies, as well as changes in them. <a data-type="xref" href="#fig_sl-star_latency-distribution">Figure 4-1</a> provides an example: although a typical request is served in about 50 ms, 5% of requests are 20 times slower! Monitoring and alerting based only on the average latency would show no change in behavior over the course of the day, when there are in fact significant changes in the tail latency (the topmost line).</p>
+      <figure class="vertical horizontal jumptarget" id="fig_sl-star_latency-distribution">
+        <img src="https://lh3.googleusercontent.com/G-Ljl-lx35hRTILL9pwj-ty2S5KE8piLPmx4wZSoaLpnfvw4WgdseYm-X5ZPCMNZS01eJmyZFwjHL4yK3ptj6WglYlX20Oi3dxA=s900" alt="50th, 85th, 95th, and 99th percentile latencies for a system. Note that the Y-axis has a logarithmic scale.">
+        <figcaption><span class="label">Figure 4-1. </span>50th, 85th, 95th, and 99th percentile latencies for a system. Note that the Y-axis has a logarithmic scale.</figcaption>
+      </figure>
+      <p>Using percentiles for indicators allows you to consider the shape of the distribution and its differing attributes: a high-order percentile, such as the 99th or 99.9th, shows you a plausible worst-case value, while using the 50th percentile (also known as the median) emphasizes the typical case. The higher the variance in response times, the more the typical user experience is affected by long-tail behavior, an effect exacerbated at high load by queuing effects. User studies have shown that people typically prefer a slightly slower system to one with high variance in response time, so some SRE teams focus only on high percentile values, on the grounds that if the 99.9th percentile behavior is good, then the typical experience is certainly going to be.</p>
+      <aside data-type="sidebar" class="pagebreak-before highlight" id="a-note-on-statistical-fallacies-BvSecehOiO">
+        <h5 class="heading jumptargets">A Note on Statistical Fallacies</h5>
+        <p>We generally prefer to work with percentiles rather than the mean (arithmetic average) of a set of values. Doing so makes it possible to consider the long tail of data points, which often have significantly different (and more interesting) characteristics than the average. Because of the artificial nature of computing systems, data points are often skewed—for instance, no request can have a response in less than 0 ms, and a timeout at 1,000 ms means that there can be no successful responses with values greater than the timeout. As a result, we cannot assume that the mean and the median are the same—or even close to each other!</p>
+        <p>We try not to assume that our data is normally distributed without verifying it first, in case some standard intuitions and approximations don’t hold. For example, if the distribution is not what’s expected, a process that takes action when it sees outliers (e.g., restarting a server with high request latencies) may do this too often, or not often enough.</p>
+      </aside>
+    </section>
+<section data-type="sect2" id="standardize-indicators-YmsbT7iO">
+      <h2 class="subheaders jumptargets">Standardize Indicators</h2>
+      <p>We recommend that you standardize on common definitions for SLIs so that you don’t have to reason about them from first principles each time. Any feature that conforms to the standard definition templates can be omitted from the specification of an individual SLI, e.g.:</p>
+      <ul>
+        <li>Aggregation intervals: “Averaged over 1 minute”</li>
+        <li>Aggregation regions: “All the tasks in a cluster”</li>
+        <li>How frequently measurements are made: “Every 10 seconds”</li>
+        <li>Which requests are included: “HTTP GETs from black-box monitoring jobs”</li>
+        <li>How the data is acquired: “Through our monitoring, measured at the server”</li>
+        <li>Data-access latency: “Time to last byte”</li>
+      </ul>
+      <p>To save effort, build a set of reusable SLI templates for each common metric; these also make it simpler for everyone to understand what a specific SLI means.</p>
+    </section>
+  </section>
+<section data-type="sect1" id="objectives-in-practice-o8squl">
+    <h1 class="heading jumptargets">Objectives in Practice</h1>
+    <p>Start by thinking about (or finding out!) what your users care about, not what you can measure. Often, what your users care about is difficult or impossible to measure, so you’ll end up approximating users’ needs in some way. However, if you simply start with what’s easy to measure, you’ll end up with less useful SLOs. As a result, we’ve sometimes found that working from desired objectives backward to specific indicators works better than choosing indicators and then coming up with targets.</p>
+    <section data-type="sect2" id="defining-objectives-q8sGIbuV">
+      <h2 class="subheaders jumptargets">Defining Objectives</h2>
+      <p>For maximum clarity, SLOs should specify how they’re measured and the conditions under which they’re valid. For instance, we might say the following (the second line is the same as the first, but relies on the SLI defaults of the previous section to remove redundancy):</p>
+      <ul>
+        <li>99% (averaged over 1 minute) of <code>Get</code> RPC calls will complete in less than 100 ms (measured across all the backend servers).</li>
+        <li>99% of <code>Get</code> RPC calls will complete in less than 100 ms.</li>
+      </ul>
+      <p>If the shape of the performance curves are important, then you can specify multiple SLO targets:</p>
+      <ul>
+        <li>90% of <code>Get</code> RPC calls will complete in less than 1 ms.</li>
+        <li>99% of <code>Get</code> RPC calls will complete in less than 10 ms.</li>
+        <li>99.9% of <code>Get</code> RPC calls will complete in less than 100 ms.</li>
+      </ul>
+      <p>If you have users with heterogeneous workloads such as a bulk processing pipeline that cares about throughput and an interactive client that cares about latency, it may be appropriate to define separate objectives for each class of workload:</p>
+      <ul>
+        <li>95% of throughput clients’ <code>Set</code> RPC calls will complete in &lt; 1 s.</li>
+        <li>99% of latency clients’ <code>Set</code> RPC calls with payloads &lt; 1 kB will complete in &lt; 10 ms.</li>
+      </ul>
+      <p>It’s both unrealistic and undesirable to insist that SLOs will be met 100% of the time: doing so can reduce the rate of innovation and deployment, require expensive, overly conservative solutions, or both. Instead, it is better to allow an error budget—a rate at which the SLOs can be missed—and track that on a daily or weekly basis. Upper management will probably want a monthly or quarterly assessment, too. (An error budget is just an SLO for meeting other SLOs!)</p>
+      <p>The SLO violation rate can be compared against the error budget (see <a data-type="xref" href="/sre-book/embracing-risk#xref_risk-management_unreliability-budgets">Motivation for Error Budgets</a>), with the gap used as an input to the process that decides when to roll out new releases.</p>
+    </section>
+<section data-type="sect2" id="choosing-targets-1LswtOun">
+      <h2 class="subheaders jumptargets">Choosing Targets</h2>
+      <p>Choosing targets (SLOs) is not a purely technical activity because of the product and business implications, which should be reflected in both the SLIs and SLOs (and maybe SLAs) that are selected. Similarly, it may be necessary to trade off certain product attributes against others within the constraints posed by staffing, time to market, hardware availability, and funding. While SRE should be part of this conversation, and advise on the risks and viability of different options, we’ve learned a few lessons that can help make this a more productive discussion:</p>
+      <dl class="desc-list">
+        <dt class="subheaders jumptargets" id="Dont-pick-a-target-based-on-current-performance">Don’t pick a target based on current performance</dt>
+        <dd>While understanding the merits and limits of a system is essential, adopting values without reflection may lock you into supporting a system that requires heroic efforts to meet its targets, and that cannot be improved without significant <span class="keep-together">redesign</span>.</dd>
+        <dt class="subheaders jumptargets" id="keep-it-simple">Keep it simple</dt>
+        <dd>Complicated aggregations in SLIs can obscure changes to system performance, and are also harder to reason about.</dd>
+        <dt class="subheaders jumptargets" id="avoid-absolutes">Avoid absolutes</dt>
+        <dd>While it’s tempting to ask for a system that can scale its load "infinitely" without any latency increase and that is "always" available, this requirement is unrealistic. Even a system that approaches such ideals will probably take a long time to design and build, and will be expensive to operate—and probably turn out to be unnecessarily better than what users would be happy (or even delighted) to have.</dd>
+        <dt class="subheaders jumptargets" id="have-as-few-slos-as-possible">Have as few SLOs as possible</dt>
+        <dd>Choose just enough SLOs to provide good coverage of your system’s attributes. Defend the SLOs you pick: if you can’t ever win a conversation about priorities by quoting a particular SLO, it’s probably not worth having that SLO.<sup><a class="jumptarget" data-type="noteref" id="id-LvQu7SYSqivIotbub-marker" href="#id-LvQu7SYSqivIotbub">17</a></sup> However, not all product attributes are amenable to SLOs: it’s hard to specify "user delight" with an SLO.</dd>
+        <dt class="subheaders jumptargets" id="perfection-can-wait">Perfection can wait</dt>
+        <dd>You can always refine SLO definitions and targets over time as you learn about a system’s behavior. It’s better to start with a loose target that you tighten than to choose an overly strict target that has to be relaxed when you discover it’s unattainable.</dd>
+      </dl>
+      <p>SLOs can—and should—be a major driver in prioritizing work for SREs and product developers, because they reflect what users care about. A good SLO is a helpful, legitimate forcing function for a development team. But a poorly thought-out SLO can result in wasted work if a team uses heroic efforts to meet an overly aggressive SLO, or a bad product if the SLO is too lax. SLOs are a massive lever: use them wisely.</p>
+    </section>
+<section data-type="sect2" id="control-measures-YmsghVuO">
+      <h2 class="subheaders jumptargets">Control Measures</h2>
+      <p>SLIs and SLOs are crucial elements in the control loops used to manage systems:</p>
+      <ol>
+        <li>Monitor and measure the system’s SLIs.</li>
+        <li>Compare the SLIs to the SLOs, and decide whether or not action is needed.</li>
+        <li>If action is needed, figure out <em>what</em> needs to happen in order to meet the target.</li>
+        <li>Take that action.</li>
+      </ol>
+      <p>For example, if step 2 shows that request latency is increasing, and will miss the SLO in a few hours unless something is done, step 3 might include testing the hypothesis that the servers are CPU-bound, and deciding to add more of them to spread the load. Without the SLO, you wouldn’t know whether (or when) to take action.</p>
+    </section>
+<section data-type="sect2" id="slos-set-expectations-vJsDT9un">
+      <h2 class="subheaders jumptargets">SLOs Set Expectations</h2>
+      <p>Publishing SLOs sets expectations for system behavior. Users (and potential users) often want to know what they can expect from a service in order to understand whether it’s appropriate for their use case. For instance, a team wanting to build a photo-sharing website might want to avoid using a service that promises very strong durability and low cost in exchange for slightly lower availability, though the same service might be a perfect fit for an archival records management system.</p>
+      <p>In order to set realistic expectations for your users, you might consider using one or both of the following tactics:</p>
+      <dl class="desc-list">
+        <dt class="subheaders jumptargets" id="keep-a-safety-margin">Keep a safety margin</dt>
+        <dd>Using a tighter internal SLO than the SLO advertised to users gives you room to respond to chronic problems before they become visible externally. An SLO buffer also makes it possible to accommodate reimplementations that trade performance for other attributes, such as cost or ease of maintenance, without having to disappoint users.</dd>
+        <dt class="subheaders jumptargets" id="dont-overachieve">Don’t overachieve</dt>
+        <dd>Users build on the reality of what you offer, rather than what you say you’ll supply, particularly for infrastructure services. If your service’s actual performance is much better than its stated SLO, users will come to rely on its current performance. You can avoid over-dependence by deliberately taking the system offline occasionally (Google’s Chubby service introduced planned outages in response to being overly available),<sup><a class="jumptarget" data-type="noteref" id="id-LvQubFYSWt0tZTbub-marker" href="#id-LvQubFYSWt0tZTbub">18</a></sup> throttling some requests, or designing the system so that it isn’t faster under light loads.</dd>
+      </dl>
+      <p>Understanding how well a system is meeting its expectations helps decide whether to invest in making the system faster, more available, and more resilient. Alternatively, if the service is doing fine, perhaps staff time should be spent on other priorities, such as paying off technical debt, adding new features, or introducing other products.</p>
+    </section>
+  </section>
+<section data-type="sect1" id="agreements-in-practice-g0sAUJ">
+    <h1 class="heading jumptargets">Agreements in Practice</h1>
+    <p>Crafting an SLA requires business and legal teams to pick appropriate consequences and penalties for a breach. SRE’s role is to help them understand the likelihood and difficulty of meeting the SLOs contained in the SLA. Much of the advice on SLO construction is also applicable for SLAs. It is wise to be conservative in what you advertise to users, as the broader the constituency, the harder it is to change or delete SLAs that prove to be unwise or difficult to work with.</p>
+  </section>
+<div data-type="footnotes" class="footnotes"><p data-type="footnote" id="id-7pEuEIgFQhdcP"><sup><a class="jumptargets" href="#id-7pEuEIgFQhdcP-marker">16</a></sup>Most people really mean SLO when they say "SLA." One giveaway: if somebody talks about an "SLA violation," they are almost always talking about a missed SLO. A real SLA violation might trigger a court case for breach of contract.</p><p data-type="footnote" id="id-LvQu7SYSqivIotbub"><sup><a class="jumptargets" href="#id-LvQu7SYSqivIotbub-marker">17</a></sup>If you can’t ever win a conversation about SLOs, it’s probably not worth having an SRE team for the product.</p><p data-type="footnote" id="id-LvQubFYSWt0tZTbub"><sup><a class="jumptargets" href="#id-LvQubFYSWt0tZTbub-marker">18</a></sup>Failure injection <a data-type="xref" href="/sre-book/bibliography#Ben12">[Ben12]</a> serves a different purpose, but can also help set expectations.</p></div>
+</section>
+    </div>
+  </div>
+
+  <div class="footer">
+    <div class="maia-aux">
+      <div class="previous">
+          <a href="/sre-book/embracing-risk/">
+            <p class="footer-caption">Previous</p>
+            <p class="chapter-link">
+                Chapter 3 - Embracing Risk
+            </p>
+          </a>
+      </div>
+      <div class="next">
+          <a href="/sre-book/eliminating-toil/">
+            <p class="footer-caption">Next</p>
+            <p class="chapter-link">
+                Chapter 5 - Eliminating Toil
+            </p>
+          </a>
+      </div>
+        <p class="footer-link">Copyright © 2017 Google, Inc. Published by O'Reilly Media, Inc. Licensed under <a href="https://creativecommons.org/licenses/by-nc-nd/4.0/" rel="noopener noreferrer" target="_blank">CC BY-NC-ND 4.0</a></p>
+    </div>
+  </div>
+    </main>
+    <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.6.6/angular.min.js"></script>
+    <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.6.6/angular-animate.min.js"></script>
+    <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.6.6/angular-touch.min.js"></script>
+    <script src="/sre-book/static/js/index.min.js?cache=5b7f90b"></script>
+
+  </body>
+</html>
