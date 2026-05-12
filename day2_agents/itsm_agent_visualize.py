@@ -30,49 +30,105 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple, TypedDict, Literal
 
 """
-day2_agents/itsm_agent.py
+day2_agents/itsm_agent_visualize.py
 
-Esercitazione Giorno 2:
-- la RAG del Giorno 1 diventa un tool dentro un agent
-- tool calling/function calling
-- loop ReAct manuale: Reason -> Act -> Observe -> Reason ...
-- tool registry
-- stop conditions
-- gestione errori robusta
-- trace strutturate
-- stato custom per evoluzione LangGraph
-- Human-in-the-loop con edge condizionale per azioni critiche
+Esercitazione Giorno 2 — ITSM Agent con LangChain e LangGraph.
 
-Prima di usare il tool RAG:
+Questo file accompagna la transizione didattica:
+
+    RAG del Giorno 1
+        ↓
+    tool LangChain
+        ↓
+    loop ReAct manuale
+        ↓
+    grafo LangGraph con stato, checkpoint e Human-in-the-loop
+
+L'obiettivo non è costruire un agent ITSM completo di produzione, ma rendere
+visibili i concetti fondamentali di un sistema agentico enterprise:
+
+1. Tool calling / function calling
+   Il modello non risponde solo con testo, ma può chiedere al runtime Python
+   di eseguire strumenti esterni.
+
+2. Tool registry
+   I tool disponibili vengono registrati e passati al modello tramite LangChain.
+   Ogni tool ha uno schema di input derivato dai type hints e una descrizione
+   derivata dalla docstring.
+
+3. Loop ReAct manuale
+   Il comando "manual" mostra esplicitamente il ciclo:
+
+       Reason  → il modello decide cosa fare
+       Act     → il runtime esegue il tool richiesto
+       Observe → il risultato del tool torna nel contesto
+       Repeat  → il modello ragiona di nuovo sui risultati
+
+4. LangGraph
+   Il comando "graph" riscrive lo stesso comportamento come grafo a stati:
+   nodi, edge, edge condizionali, stato condiviso e checkpoint.
+
+5. Human-in-the-loop
+   Le azioni critiche, come una escalation formale, non vengono eseguite
+   automaticamente. Il grafo si interrompe e richiede una decisione umana.
+
+6. Visualizzazione del grafo
+   Il comando "visualize" esporta il grafo LangGraph in formato Mermaid e PNG,
+   utile per spiegare agli studenti la topologia del workflow.
+
+Comandi principali:
+
+    # Scrive i documenti ITSM nella cartella dati del Giorno 1 e li indicizza
     python day2_agents/itsm_agent.py setup-rag-data --ingest
 
-Oppure, manualmente:
-    python day1_morning_rag/main.py setup-data
-    python day1_morning_rag/main.py ingest
-
-Modalità:
-    manual  -> esegue il loop ReAct scritto a mano, utile per capire cosa succede sotto LangGraph
-    graph   -> esegue una versione LangGraph con stato, checkpoint in memoria e HITL didattico
-
-Comandi:
-    python day2_agents/itsm_agent.py setup-rag-data --ingest
+    # Mostra prompt di esempio
     python day2_agents/itsm_agent.py examples
-    python day2_agents/itsm_agent.py manual "Mostrami INC-1002 e calcola lo SLA."
-    python day2_agents/itsm_agent.py graph "Mostrami INC-1002, calcola lo SLA e proponi l'azione." --auto-decision approve
-    (opzionale) python day2_agents/itsm_agent.py graph "Mostrami INC-1002, calcola lo SLA e proponi l'azione." --auto-decision reject
 
-Variabili .env:
+    # Esegue il loop ReAct manuale
+    python day2_agents/itsm_agent.py manual "Mostrami INC-1002 e calcola lo SLA."
+
+    # Esegue il grafo LangGraph
+    python day2_agents/itsm_agent.py graph "Mostrami INC-1002, calcola lo SLA e proponi l'azione."
+
+    # Simula approvazione umana automatica per demo single-process
+    python day2_agents/itsm_agent.py graph "Mostrami INC-1002, calcola lo SLA e proponi l'azione." --auto-decision approve
+
+    # Simula rifiuto umano automatico
+    python day2_agents/itsm_agent.py graph "Mostrami INC-1002, calcola lo SLA e proponi l'azione." --auto-decision reject
+
+    # Esporta il grafo in Mermaid e PNG
+    python day2_agents/itsm_agent.py visualize
+
+Variabili .env usate:
+
     GOOGLE_API_KEY=...
     GEMINI_MODEL=gemini-2.5-flash
     MIN_SECONDS_BETWEEN_MODEL_CALLS=15
     TOP_K=3
     ALLOW_FALLBACK_KB=true
+    MAX_TOOL_CALLS=8
+    MAX_TOTAL_SECONDS=90
 
-Nota didattica:
-    LangChain usa la docstring di una funzione decorata con @tool come descrizione base
-    del tool. Per questo le docstring dei tool sono volutamente esplicite:
-    aiutano il modello a decidere quando chiamare quale strumento.
+Prerequisito RAG:
+
+    Prima di usare search_kb_tool, la RAG del Giorno 1 deve essere disponibile.
+
+    Opzione consigliata:
+        python day2_agents/itsm_agent.py setup-rag-data --ingest
+
+    Oppure manualmente:
+        python day1_morning_rag/main.py setup-data
+        python day1_morning_rag/main.py ingest
+
+Nota didattica su @tool:
+
+    In LangChain, il decoratore @tool trasforma una funzione Python in uno
+    strumento chiamabile dal modello. I type hints contribuiscono allo schema
+    degli argomenti, mentre la docstring diventa la descrizione semantica del
+    tool. Per questo le docstring dei tool sono volutamente esplicite: aiutano
+    il modello a scegliere lo strumento corretto.
 """
+
 
 
 # ---------------------------------------------------------------------
