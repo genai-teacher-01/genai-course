@@ -9,39 +9,39 @@ Backend LLM: Google Gemini via LangChain (fallback euristico se API key assente)
 
   ai-act-levels
       Stampa i 4 livelli di rischio dell'AI Act con esempi e obblighi.
-      Uso: python ai_act.py ai-act-levels
+      Uso: python day5_governance/ai_act.py ai-act-levels
 
   classify <description> [--fast]
       Classifica un sistema AI in uno dei 4 livelli (inaccettabile / alto /
       limitato / minimo). Senza --fast usa Gemini; con --fast usa regex.
-      Uso: python ai_act.py classify "Sistema di scoring creditizio automatico"
-      Uso: python ai_act.py classify "Chatbot HR" --fast
+      Uso: python day5_governance/ai_act.py classify "Sistema di scoring creditizio automatico"
+      Uso: python day5_governance/ai_act.py classify "Chatbot HR" --fast
 
   check-prompt <prompt>
       Verifica la conformità Art. 50 di un system prompt (disclosure AI,
       assenza di istruzioni a fingersi umano, ecc.). Restituisce score 0-100.
-      Uso: python ai_act.py check-prompt "Sei un assistente IT."
+      Uso: python day5_governance/ai_act.py check-prompt "Sei un assistente IT."
 
   patch-prompt <prompt> [--fast]
       Corregge automaticamente un system prompt non conforme aggiungendo
       la disclosure Art. 50. Con --fast usa template standard; senza usa LLM.
-      Uso: python ai_act.py patch-prompt "Sei un assistente IT." --fast
+      Uso: python day5_governance/ai_act.py patch-prompt "Sei un assistente IT." --fast
 
   validate-raci
       Valida la matrice RACI di governance inclusa nel modulo (SAMPLE_RACI).
       Verifica che ogni attività abbia esattamente un Accountable (A).
-      Uso: python ai_act.py validate-raci
+      Uso: python day5_governance/ai_act.py validate-raci
 
   gen-onepager [--fast]
       Genera un documento di governance one-pager per il sistema ITSM di
       esempio: classifica AI Act + compliance check + patch prompt + salvataggio
       JSON timestampato in runs/day5_pomeriggio/.
-      Uso: python ai_act.py gen-onepager
-      Uso: python ai_act.py gen-onepager --fast
+      Uso: python day5_governance/ai_act.py gen-onepager
+      Uso: python day5_governance/ai_act.py gen-onepager --fast
 
   examples
       Placeholder — rimanda alla docstring per esempi completi.
-      Uso: python ai_act.py examples
+      Uso: python day5_governance/ai_act.py examples
 
 ════════════════════════════════════════════════════════════════
  VARIABILI D'AMBIENTE (.env)
@@ -106,6 +106,43 @@ def _rate_limit() -> None:
 def _cost(tokens_in: int, tokens_out: int) -> float:
     return (tokens_in / 1_000_000) * PRICE_IN_PER_1M + \
            (tokens_out / 1_000_000) * PRICE_OUT_PER_1M
+
+def _content_to_text(content: Any) -> str:
+    if content is None:
+        return ""
+
+    if isinstance(content, str):
+        return content
+
+    if isinstance(content, list):
+        parts: List[str] = []
+        for block in content:
+            if isinstance(block, str):
+                parts.append(block)
+            elif isinstance(block, dict):
+                value = block.get("text") or block.get("content")
+                if isinstance(value, str):
+                    parts.append(value)
+                elif isinstance(value, list):
+                    parts.append(_content_to_text(value))
+                else:
+                    parts.append(json.dumps(block, ensure_ascii=False))
+            else:
+                parts.append(str(block))
+        return "\n".join(p for p in parts if p)
+
+    return str(content)
+
+
+def _response_to_text(resp: Any) -> str:
+    return _content_to_text(getattr(resp, "content", resp)).strip()
+
+
+def _strip_json_fence(raw: str) -> str:
+    raw = raw.strip()
+    raw = re.sub(r"^```(?:json)?\s*", "", raw)
+    raw = re.sub(r"\s*```$", "", raw)
+    return raw.strip()
 
 AI_ACT_LEVELS: Dict[str, Dict[str, Any]] = {
     "inaccettabile": {
@@ -247,9 +284,9 @@ def classify_ai_act(description: str, fast: bool = False) -> Dict[str, Any]:
         HumanMessage(content=_CLASSIFY_HUMAN.format(description=description)),
     ]
     resp = llm.invoke(messages)
-    raw = resp.content.strip()
-    raw = re.sub(r"^```(?:json)?\s*", "", raw)
-    raw = re.sub(r"\s*```$", "", raw)
+
+    raw = _strip_json_fence(_response_to_text(resp))
+
     try:
         data = json.loads(raw)
         level = data.get("level", "minimo")
@@ -405,7 +442,7 @@ def patch_prompt(system_prompt: str, fast: bool = False) -> Dict[str, Any]:
         HumanMessage(content=f"System prompt da correggere:\n\n{system_prompt}"),
     ]
     resp = llm.invoke(messages)
-    patched_prompt = resp.content.strip()
+    patched_prompt = _response_to_text(resp)
     check_after = check_prompt_compliance(patched_prompt)
     return {
         "patched": True,
@@ -588,9 +625,8 @@ def generate_onepager(fast: bool = False) -> Dict[str, Any]:
             )),
         ]
         resp = llm.invoke(messages)
-        raw = resp.content.strip()
-        raw = re.sub(r"^```(?:json)?\s*", "", raw)
-        raw = re.sub(r"\s*```$", "", raw)
+        raw = _strip_json_fence(_response_to_text(resp))
+
         try:
             enriched = json.loads(raw)
             onepager.update(enriched)
