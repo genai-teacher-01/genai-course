@@ -30,3 +30,17 @@ data/
 # Logs and temporary outputs
 *.log
 .DS_Store
+
+# Java / Maven
+target/
+*.class
+*.jar
+
+# Claude / AI tools
+.claude/
+
+# Guide docente
+GUIDA_DOCENTE.md
+
+# QA log generato a runtime
+qa_log.md
